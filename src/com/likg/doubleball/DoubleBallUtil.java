@@ -1,8 +1,18 @@
 package com.likg.doubleball;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.TreeSet;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
 
 public class DoubleBallUtil {
 
@@ -10,7 +20,10 @@ public class DoubleBallUtil {
 	public static final int BULE_BALL_COUNT = 16;
 	private static Random r = new Random();
 	
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
+		
+		
+		/*
 		int totalRedBall = 0;
 		int count = 100000;
 		for(int i=0; i<count; i++){
@@ -23,6 +36,14 @@ public class DoubleBallUtil {
 		}
 		
 		System.out.println("总平均值："+(totalRedBall*1.0 / count));
+		*/
+		
+		int totalRedBall = 0;
+		List<DoubleBall> doubleBallList = getHistoryLottery();
+		for(DoubleBall ball : doubleBallList){
+			totalRedBall += ball.getRedBallSum();
+		}
+		System.out.println("总平均值："+(totalRedBall*1.0 / doubleBallList.size()));
 	}
 	
 	public static Set<Integer> createRedBall() {
@@ -41,51 +62,40 @@ public class DoubleBallUtil {
 		return r.nextInt(BULE_BALL_COUNT) + 1;
 	}
 	
+	
+	
+	
+	public static List<DoubleBall> getHistoryLottery() throws IOException {
+		List<DoubleBall> doubleBallList = new ArrayList<DoubleBall>();
+		InputStream input = DoubleBallUtil.class.getClassLoader().getResourceAsStream("historyLottery.txt");
+		List<String> lineList = IOUtils.readLines(input);
+		for(String line : lineList){
+			//空行
+			if(StringUtils.isBlank(line)){
+				continue;
+			}
+			
+			//2015013    08,09,24,25,26,29|01    2015-01-29
+			String[] result = line.split("\\s+");
+			DoubleBall doubleBall = new DoubleBall();
+			doubleBall.setPhaseCode(result[0]);
+			doubleBall.setLotteryDate(result[2]);
+			String[] codes = result[1].split("\\|");
+			
+			for(String redBall : codes[0].split(",")){
+				doubleBall.getRedBallSet().add(Integer.valueOf(redBall));
+			}
+			doubleBall.setBuleBall(Integer.valueOf(codes[1]));
+			
+			System.out.println(doubleBall);
+			doubleBallList.add(doubleBall);
+		}
+		
+		return doubleBallList;
+	}
+	
 }
 
-class DoubleBall {
-	private Set<Integer> redSet = new TreeSet<Integer>();
-	private int buleBall;
-	//private int redBallSum;
-	
-	public DoubleBall() {
-	}
-	public DoubleBall(Set<Integer> redSet, int buleBall) {
-		this.redSet = redSet;
-		this.buleBall = buleBall;
-	}
-	public Set<Integer> getRedSet() {
-		return redSet;
-	}
-	public void setRedSet(Set<Integer> redSet) {
-		this.redSet = redSet;
-	}
-	public int getBuleBall() {
-		return buleBall;
-	}
-	public void setBuleBall(int buleBall) {
-		this.buleBall = buleBall;
-	}
-	public int getRedBallSum() {
-		int redBallSum = 0;
-		for(int red : redSet){
-			redBallSum += red;
-		}
-		return redBallSum;
-	}
-	@Override
-	public String toString() {
-		StringBuilder str = new StringBuilder();
-		for(int red : redSet){
-			str.append(red).append("\t");
-		}
-		str.append(": ").append(this.buleBall);
-		
-		str.append("\t").append(this.getRedBallSum());
-		
-		return str.toString();
-	}
-}
 
 
 
