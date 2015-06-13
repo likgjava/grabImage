@@ -3,6 +3,8 @@ package com.likg.image;
 import java.io.BufferedReader;
 import java.io.FileReader;
 
+import org.apache.commons.lang.StringUtils;
+
 public class FileUtils {
 
 	/**
@@ -13,6 +15,7 @@ public class FileUtils {
 	 * @author likaige
 	 * @create 2014年1月22日 下午2:20:07
 	 */
+	@Deprecated
 	public static String readFile(String filePath) throws Exception {
 		StringBuilder content = new StringBuilder();
 		BufferedReader br = null;
@@ -31,6 +34,13 @@ public class FileUtils {
 			}
 		}
 		return content.toString();
+	}
+	
+	public static String processFileName(String fileName) throws Exception {
+		fileName = StringUtils.replace(fileName, " ", "");
+		fileName = StringUtils.replace(fileName, "，", "");
+		fileName = StringUtils.replace(fileName, ",", "");
+		return fileName;
 	}
 	
 }

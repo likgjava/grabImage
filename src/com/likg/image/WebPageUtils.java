@@ -6,7 +6,10 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -15,7 +18,7 @@ public class WebPageUtils {
 	/** 
 	 * 网页字符编码
 	 */
-	public static final String CHARSET = "UTF-8";
+	public static final String CHARSET = "gbk"; //UTF-8
 	
 	/** 
 	 * 基本路径，
@@ -31,8 +34,8 @@ public class WebPageUtils {
 	 * @author likaige
 	 * @create 2014年1月22日 上午10:52:31
 	 */
-	public static List<String> getLabelAttr(String html, String labelName, String attrName) {
-		List<String> attrList = new ArrayList<String>();
+	public static Set<String> getLabelAttr(String html, String labelName, String attrName) {
+		Set<String> attrList = new HashSet<String>();
 		//<[img][^>]*\\ssrc\\s*=\\s*[\"']?([^'\">]*)[\"'>]?[^>]*>
 		String regex = "<["+labelName+"][^>]*\\s"+attrName+"\\s*=\\s*[\"']?([^'\">]*)[\"'>]?[^>]*>";
 		Matcher m = Pattern.compile(regex, Pattern.CASE_INSENSITIVE).matcher(html);
@@ -54,27 +57,29 @@ public class WebPageUtils {
 	 * @create 2014年1月22日 下午1:39:54
 	 */
 	public static List<String> getImgSrc(String html, String parentUrl) {
-		List<String> srcList = WebPageUtils.getLabelAttr(html, "img", "src");
+		Set<String> srcList = WebPageUtils.getLabelAttr(html, "img", "src");
 		
 		//过滤无效图片路径
-		for(int i=srcList.size()-1; i>=0; i--) {
-			String src = srcList.get(i);
+		for(Iterator<String> iter=srcList.iterator(); iter.hasNext(); ){
+			String src = iter.next();
 			if(src==null || src.trim().length()==0) {
-				srcList.remove(i);
+				iter.remove();
 			}
 			else if("about:blank".equalsIgnoreCase(src)) {
-				srcList.remove(i);
+				iter.remove();
 			}
 		}
 		
 		//补全图片路径
-		for(int i=srcList.size()-1; i>=0; i--) {
-			String src = srcList.get(i);
+		List<String> list = new ArrayList<String>();
+		for(String src : srcList){
 			if(!src.startsWith("http")) {
-				srcList.set(i, parentUrl+src);
+				list.add(parentUrl+src);
+			}else{
+				list.add(src);
 			}
 		}
-		return srcList;
+		return list;
 	}
 	
 	/**
@@ -140,7 +145,7 @@ public class WebPageUtils {
 			}
 		} catch (Exception e) {
 			System.out.println("获取网页<"+urlStr+">源代码时出现异常！");
-			e.printStackTrace();
+			System.err.println(e.getMessage());
 		} finally {
 			if(br != null) {
 				try {

@@ -2,11 +2,15 @@ package com.likg.image;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
 public class ImageUtils {
+	
+	/** 最小图片长度限制，小于该数值的图片下载后直接删除 */
+	public static final long MIN_IMG_SIZE = 15 * 1024;
 
 	/**
 	 * 下载网络图片
@@ -22,6 +26,7 @@ public class ImageUtils {
 		HttpURLConnection conn = null;
 		DataInputStream in = null;
 		DataOutputStream out = null;
+		File f = new File(savePath + ImageUtils.getFileName(urlStr));
 		try {
 			URL url = new URL(urlStr);
 			conn = (HttpURLConnection) url.openConnection();
@@ -30,15 +35,16 @@ public class ImageUtils {
 			conn.setConnectTimeout(3 * 1000);
 			conn.setRequestProperty("User-Agent", "Mozilla/4.0 (compatible; MSIE 5.0; Windows NT; DigExt)");
 			in = new DataInputStream(conn.getInputStream());
-			out = new DataOutputStream(new FileOutputStream(savePath + ImageUtils.getFileName(urlStr)));
+			
+			out = new DataOutputStream(new FileOutputStream(f));
 			
 			byte[] data = new byte[1024];
 			int count = 0;
 			while((count = in.read(data)) != -1) {
 				out.write(data, 0, count);
 			}
+			
 		} catch (Exception e) {
-			//e.printStackTrace();
 			System.err.println("下载图片<"+urlStr+">时出现异常！");
 			throw e;
 		} finally {
@@ -51,6 +57,13 @@ public class ImageUtils {
 			if(conn != null) {
 				conn.disconnect();
 			}
+		}
+		
+		//System.out.println(savePath + ImageUtils.getFileName(urlStr)+"====>"+f.length());
+		
+		//小于该数字的图片直接删除
+		if(f.length() < MIN_IMG_SIZE){
+			f.delete();
 		}
 	}
 	

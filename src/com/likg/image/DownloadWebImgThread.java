@@ -27,7 +27,8 @@ public class DownloadWebImgThread implements Runnable {
 			try {
 				ImageUtils.downloadWebImg(src, savePath);
 			} catch (Exception e) {
-				e.printStackTrace();
+				//e.printStackTrace();
+				System.err.println(e.getMessage());
 			}
 		}
 	}

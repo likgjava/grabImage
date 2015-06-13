@@ -3,25 +3,39 @@ package com.likg.image;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class Client {
 	
+	/** 链接的父路径 */
 	public static final String BASE_LINK_URL = "";
+	
+	/** 网页目录链接文件路径 */
+	public static final String CATALOG_FILE_PATH = "E:/a/dir.txt";
+	
+	/** 图片保存路径 */
+	public static final String IMG_SAVE_PATH = "E:/a/img/";
 
 	public static void main(String[] args) throws Exception {
 		long start = System.currentTimeMillis();
 		
 		//获取网页目录链接
-		String content = FileUtils.readFile("D:/dir.txt");
-		List<String> linkList = WebPageUtils.getLabelAttr(content, "a", "href");
+		String content = org.apache.commons.io.FileUtils.readFileToString(new File(CATALOG_FILE_PATH));
+		Set<String> linkList = WebPageUtils.getLabelAttr(content, "a", "href");
+		
+		//过滤字符串
+		StringFilterUtil.startsWithFilter(linkList, "http://se2016.xxx/thread");
+		
+		for(String s : linkList){
+			System.out.println(s);
+		}
+		System.out.println("=============================================================");
 		
 		SimpleDateFormat sdf = new SimpleDateFormat("MMdd-HHmmss-");
-		String baseSavePath = "D:/img/";
 		
-		ExecutorService exec = Executors.newCachedThreadPool();
+		ExecutorService exec = Executors.newFixedThreadPool(10);
 		
 		for(String link : linkList) {
 			//获取网页源代码
@@ -39,24 +53,15 @@ public class Client {
 			String title = WebPageUtils.getPageTitle(html);
 			System.out.println("《"+title+"》开始处理...");
 			
+			title = FileUtils.processFileName(title);
+			
 			//保存路径
-			String savePath = baseSavePath + sdf.format(new Date()) + title +"/";
+			String savePath = IMG_SAVE_PATH + sdf.format(new Date()) + title +"/";
 			new File(savePath).mkdirs();
 			
 			//启动下载网络图片的线程
 			exec.execute(new DownloadWebImgThread(html, parentUrl, savePath));
 			
-			/*单线程下载
-			//获取图片路径
-			List<String> srcList = WebPageUtils.getImgSrc(html, parentUrl);
-			for(String src : srcList) {
-				try {
-					ImageUtils.downloadWebImg(src, savePath);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-			*/
 			System.out.println();
 		}
 		
