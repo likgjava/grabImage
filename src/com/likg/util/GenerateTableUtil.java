@@ -53,6 +53,7 @@ public class GenerateTableUtil {
 			//表名称	字段	是否主键	是否外键/表	是否索引	类型/长度	备注
 
 			row.createCell(columnNum++).setCellValue("表名称");
+			row.createCell(columnNum++).setCellValue("表描述");
 			row.createCell(columnNum++).setCellValue("字段");
 			row.createCell(columnNum++).setCellValue("是否主键");
 			row.createCell(columnNum++).setCellValue("是否外键/表");
@@ -64,12 +65,13 @@ public class GenerateTableUtil {
 				row = sheet.createRow(rowNum++);
 				columnNum = 0;
 				row.createCell(columnNum++).setCellValue(t.getName());
+				row.createCell(columnNum++).setCellValue(t.getComment());
 				int fieldCount = t.getItemList().size();
 				for(int i=0; i<fieldCount; i++){
 					TableItem item = t.getItemList().get(i);
 					if(i > 0){
 						row = sheet.createRow(rowNum++);
-						columnNum = 1;
+						columnNum = 2;
 					}
 					row.createCell(columnNum++).setCellValue(item.getField());
 					row.createCell(columnNum++).setCellValue(item.isPK() ? "Y" : "");
@@ -82,10 +84,11 @@ public class GenerateTableUtil {
 				System.out.println(t.getName());
 				System.out.println(rowNum-fieldCount + "=="+(rowNum-1));
 				sheet.addMergedRegion(new CellRangeAddress(rowNum-fieldCount, rowNum-1, 0, 0));
+				sheet.addMergedRegion(new CellRangeAddress(rowNum-fieldCount, rowNum-1, 1, 1));
 			}
 
 			//sheet.addMergedRegion(new CellRangeAddress(1, 3, 0, 0));
-			FileOutputStream fos = new FileOutputStream("C:/Users/Administrator/Desktop/aaa.xlsx");
+			FileOutputStream fos = new FileOutputStream("C:/Users/Administrator/Desktop/表结构.xlsx");
 			wb.write(fos);
 			
 			wb.close();
