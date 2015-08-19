@@ -1,4 +1,4 @@
-package com.likg;
+package com.likg.email;
 
 import java.util.Properties;
 
